@@ -3,7 +3,6 @@ package ru.mipt.bit.platformer.util;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.Map;
-import com.badlogic.gdx.maps.MapLayer;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.MapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
@@ -19,84 +18,66 @@ import static com.badlogic.gdx.math.MathUtils.clamp;
 
 public final class GdxGameUtils {
 
+    public static final float MOVEMENT_START_PROGRESS = 0f;
+    public static final float MOVEMENT_COMPLETE_PROGRESS = 1f;
+    private static final float TILE_CENTER_OFFSET = 0.5f;
+    private static final float ORIGINAL_SCALE = 1f;
+
     private GdxGameUtils() {
     }
 
-    public static MapRenderer createSingleLayerMapRenderer(TiledMap tiledMap, Batch batch) {
-        TiledMapTileLayer tileLayer = getSingleLayer(tiledMap);
-        float viewWidth = tileLayer.getWidth() * tileLayer.getTileWidth();
-        float viewHeight = tileLayer.getHeight() * tileLayer.getTileHeight();
+    public static MapRenderer createFullMapRenderer(TiledMap tiledMap, Batch batch) {
+        TiledMapTileLayer tileLayer = getOnlyTileLayer(tiledMap);
+        float mapWidthPixels = tileLayer.getWidth() * tileLayer.getTileWidth();
+        float mapHeightPixels = tileLayer.getHeight() * tileLayer.getTileHeight();
 
         OrthogonalTiledMapRenderer mapRenderer = new OrthogonalTiledMapRenderer(tiledMap, batch);
-        mapRenderer.getViewBounds().set(0f, 0f, viewWidth, viewHeight);
+        mapRenderer.getViewBounds().set(0f, 0f, mapWidthPixels, mapHeightPixels);
 
         return mapRenderer;
     }
 
-    public static <L extends MapLayer> L getSingleLayer(Map map) {
+    public static TiledMapTileLayer getOnlyTileLayer(Map map) {
         MapLayers layers = map.getLayers();
         switch (layers.size()) {
             case 0:
                 throw new NoSuchElementException("Map has no layers");
             case 1:
-                @SuppressWarnings("unchecked")
-                L layer = (L) layers.iterator().next();
-                return layer;
+                if (!(layers.get(0) instanceof TiledMapTileLayer)) {
+                    throw new IllegalArgumentException("Map layer must be a tile layer");
+                }
+                return (TiledMapTileLayer) layers.get(0);
             default:
                 throw new IllegalArgumentException("Map has more than one layer");
         }
     }
 
-    public static Rectangle moveRectangleAtTileCenter(TiledMapTileLayer tileLayer, Rectangle rectangle, GridPoint2 tileCoordinates) {
-        Vector2 tileCenter = calculateTileCenter(tileLayer, tileCoordinates);
-        return rectangle.setCenter(tileCenter);
+    public static Rectangle centerSpriteOnTile(TiledMapTileLayer tileLayer, Rectangle spriteBounds, GridPoint2 tileCoordinates) {
+        Vector2 tileCenter = calculateTileCenterPixels(tileLayer, tileCoordinates);
+        return spriteBounds.setCenter(tileCenter);
     }
 
-    public static GridPoint2 incrementedY(GridPoint2 point) {
-        return new GridPoint2(point).add(0, 1);
+    public static void drawSpriteAtOriginalSize(Batch batch, TextureRegion spriteRegion, Rectangle spriteBounds, float rotationDegrees) {
+        int spriteWidthPixels = spriteRegion.getRegionWidth();
+        int spriteHeightPixels = spriteRegion.getRegionHeight();
+        float rotationOriginX = spriteWidthPixels / 2f;
+        float rotationOriginY = spriteHeightPixels / 2f;
+        batch.draw(spriteRegion, spriteBounds.x, spriteBounds.y, rotationOriginX, rotationOriginY, spriteWidthPixels, spriteHeightPixels, ORIGINAL_SCALE, ORIGINAL_SCALE, rotationDegrees);
     }
 
-    public static GridPoint2 decrementedX(GridPoint2 point) {
-        return new GridPoint2(point).sub(1, 0);
-    }
-
-    public static GridPoint2 decrementedY(GridPoint2 point) {
-        return new GridPoint2(point).sub(0, 1);
-    }
-
-    public static GridPoint2 incrementedX(GridPoint2 point) {
-        return new GridPoint2(point).add(1, 0);
-    }
-
-    public static void drawTextureRegionUnscaled(Batch batch, TextureRegion region, Rectangle rectangle, float rotation) {
-        int regionWidth = region.getRegionWidth();
-        int regionHeight = region.getRegionHeight();
-        float regionOriginX = regionWidth / 2f;
-        float regionOriginY = regionHeight / 2f;
-        batch.draw(region, rectangle.x, rectangle.y, regionOriginX, regionOriginY, regionWidth, regionHeight, 1f, 1f, rotation);
-    }
-
-    public static Rectangle createBoundingRectangle(TextureRegion region) {
+    public static Rectangle createSpriteBounds(TextureRegion spriteRegion) {
         return new Rectangle()
-                .setWidth(region.getRegionWidth())
-                .setHeight(region.getRegionHeight());
+                .setWidth(spriteRegion.getRegionWidth())
+                .setHeight(spriteRegion.getRegionHeight());
     }
 
-    public static float continueProgress(float previousProgress, float deltaTime, float speed) {
-        return clamp(previousProgress + deltaTime / speed, 0f, 1f);
+    public static float advanceMovementProgress(float currentProgress, float elapsedSeconds, float movementDurationSeconds) {
+        return clamp(currentProgress + elapsedSeconds / movementDurationSeconds, MOVEMENT_START_PROGRESS, MOVEMENT_COMPLETE_PROGRESS);
     }
 
-    private static Vector2 calculateTileCenter(TiledMapTileLayer tileLayer, GridPoint2 tileCoordinates) {
-        int tileWidth = tileLayer.getTileWidth();
-        int tileHeight = tileLayer.getTileHeight();
-        int tileBottomLeftCornerX = tileCoordinates.x * tileWidth;
-        int tileBottomLeftCornerY = tileCoordinates.y * tileHeight;
-
-        return new Rectangle()
-                .setX(tileBottomLeftCornerX)
-                .setY(tileBottomLeftCornerY)
-                .setWidth(tileWidth)
-                .setHeight(tileHeight)
-                .getCenter(new Vector2());
+    private static Vector2 calculateTileCenterPixels(TiledMapTileLayer tileLayer, GridPoint2 tileCoordinates) {
+        float tileCenterX = (tileCoordinates.x + TILE_CENTER_OFFSET) * tileLayer.getTileWidth();
+        float tileCenterY = (tileCoordinates.y + TILE_CENTER_OFFSET) * tileLayer.getTileHeight();
+        return new Vector2(tileCenterX, tileCenterY);
     }
 }

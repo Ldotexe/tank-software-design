@@ -5,32 +5,32 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 
-import static ru.mipt.bit.platformer.util.GdxGameUtils.moveRectangleAtTileCenter;
+import static ru.mipt.bit.platformer.util.GdxGameUtils.centerSpriteOnTile;
 
 public class TileMovement {
 
     private final TiledMapTileLayer tileLayer;
-    private final Interpolation interpolation;
+    private final Interpolation movementInterpolation;
 
-    public TileMovement(TiledMapTileLayer tileLayer, Interpolation interpolation) {
+    public TileMovement(TiledMapTileLayer tileLayer, Interpolation movementInterpolation) {
         this.tileLayer = tileLayer;
-        this.interpolation = interpolation;
+        this.movementInterpolation = movementInterpolation;
     }
 
-    public Rectangle moveRectangleBetweenTileCenters(Rectangle rectangle, GridPoint2 fromTileCoordinates, GridPoint2 toTileCoordinates, float progress) {
-        moveRectangleAtTileCenter(tileLayer, rectangle, fromTileCoordinates);
-        float fromTileBottomLeftX = rectangle.x;
-        float fromTileBottomLeftY = rectangle.y;
+    public Rectangle interpolateSpritePosition(Rectangle spriteBounds, GridPoint2 startTile, GridPoint2 destinationTile, float movementProgress) {
+        centerSpriteOnTile(tileLayer, spriteBounds, startTile);
+        float startX = spriteBounds.x;
+        float startY = spriteBounds.y;
 
-        moveRectangleAtTileCenter(tileLayer, rectangle, toTileCoordinates);
-        float toTileBottomLeftX = rectangle.x;
-        float toTileBottomLeftY = rectangle.y;
+        centerSpriteOnTile(tileLayer, spriteBounds, destinationTile);
+        float destinationX = spriteBounds.x;
+        float destinationY = spriteBounds.y;
 
-        float intermediateBottomLeftX = interpolation.apply(fromTileBottomLeftX, toTileBottomLeftX, progress);
-        float intermediateBottomLeftY = interpolation.apply(fromTileBottomLeftY, toTileBottomLeftY, progress);
+        float interpolatedX = movementInterpolation.apply(startX, destinationX, movementProgress);
+        float interpolatedY = movementInterpolation.apply(startY, destinationY, movementProgress);
 
-        return rectangle
-                .setX(intermediateBottomLeftX)
-                .setY(intermediateBottomLeftY);
+        return spriteBounds
+                .setX(interpolatedX)
+                .setY(interpolatedY);
     }
 }
