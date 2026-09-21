@@ -1,39 +1,30 @@
 package ru.mipt.bit.platformer;
 
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.GridPoint2;
 
-import static com.badlogic.gdx.Input.Keys.*;
-
 public enum Direction {
-    UP(0, 1, 90f, Input.Keys.UP, W),
-    LEFT(-1, 0, -180f, Input.Keys.LEFT, A),
-    DOWN(0, -1, -90f, Input.Keys.DOWN, S),
-    RIGHT(1, 0, 0f, Input.Keys.RIGHT, D);
+    UP(0, 1, 90f),
+    LEFT(-1, 0, -180f),
+    DOWN(0, -1, -90f),
+    RIGHT(1, 0, 0f);
 
-    private final int tileOffsetX;
-    private final int tileOffsetY;
+    private final GridPoint2 vector;
     private final float rotationDegrees;
-    private final int arrowKey;
-    private final int letterKey;
 
-    Direction(int tileOffsetX, int tileOffsetY, float rotationDegrees, int arrowKey, int letterKey) {
-        this.tileOffsetX = tileOffsetX;
-        this.tileOffsetY = tileOffsetY;
+    Direction(int offsetX, int offsetY, float rotationDegrees) {
+        vector = new GridPoint2(offsetX, offsetY);
         this.rotationDegrees = rotationDegrees;
-        this.arrowKey = arrowKey;
-        this.letterKey = letterKey;
+    }
+
+    public GridPoint2 getVector() {
+        return new GridPoint2(vector);
     }
 
     public GridPoint2 calculateAdjacentTile(GridPoint2 tilePosition) {
-        return new GridPoint2(tilePosition).add(tileOffsetX, tileOffsetY);
+        return new GridPoint2(tilePosition).add(vector);
     }
 
     public float getRotationDegrees() {
         return rotationDegrees;
-    }
-
-    public boolean isMovementKeyPressed(Input input) {
-        return input.isKeyPressed(arrowKey) || input.isKeyPressed(letterKey);
     }
 }

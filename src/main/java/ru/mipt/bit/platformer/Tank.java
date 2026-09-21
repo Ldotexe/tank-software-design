@@ -2,12 +2,12 @@ package ru.mipt.bit.platformer;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-import static com.badlogic.gdx.math.MathUtils.isEqual;
-import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
+import java.util.Objects;
 
-public class Tank extends GameObject {
-    private static final String TEXTURE_PATH = "images/tank_blue.png";
-    private static final float TILE_MOVEMENT_DURATION_SECONDS = 0.4f;
+public final class Tank extends GameObject {
+    public static final float TILE_MOVEMENT_DURATION_SECONDS = 0.4f;
+    private static final float MOVEMENT_START_PROGRESS = 0f;
+    private static final float MOVEMENT_COMPLETE_PROGRESS = 1f;
 
     private final GameField gameField;
     private final GridPoint2 destinationTile;
@@ -15,18 +15,18 @@ public class Tank extends GameObject {
     private float movementProgress = MOVEMENT_COMPLETE_PROGRESS;
 
     public Tank(GameField gameField, int tileX, int tileY) {
-        super(TEXTURE_PATH, tileX, tileY);
-        this.gameField = gameField;
-        destinationTile = new GridPoint2(tilePosition);
-        gameField.centerSpriteOnTile(spriteBounds, tilePosition);
+        super(tileX, tileY);
+        this.gameField = Objects.requireNonNull(gameField);
+        destinationTile = getTilePosition();
     }
 
-    public void tryStartMoving(Direction direction) {
-        if (!isEqual(movementProgress, MOVEMENT_COMPLETE_PROGRESS)) {
+    public void tryStartMoving(Direction requestedDirection) {
+        Objects.requireNonNull(requestedDirection);
+        if (isMoving()) {
             return;
         }
-        this.direction = direction;
-        GridPoint2 adjacentTile = direction.calculateAdjacentTile(tilePosition);
+        direction = requestedDirection;
+        GridPoint2 adjacentTile = direction.calculateAdjacentTile(getTilePosition());
         if (gameField.isTileUnoccupied(adjacentTile)) {
             destinationTile.set(adjacentTile);
             movementProgress = MOVEMENT_START_PROGRESS;
@@ -34,15 +34,29 @@ public class Tank extends GameObject {
     }
 
     public void updateMovement(float elapsedSeconds) {
-        gameField.interpolateSpritePosition(spriteBounds, tilePosition, destinationTile, movementProgress);
-        movementProgress = advanceMovementProgress(movementProgress, elapsedSeconds, TILE_MOVEMENT_DURATION_SECONDS);
-        if (isEqual(movementProgress, MOVEMENT_COMPLETE_PROGRESS)) {
-            tilePosition.set(destinationTile);
+        if (!Float.isFinite(elapsedSeconds) || elapsedSeconds < 0f) {
+            throw new IllegalArgumentException("Elapsed time must be finite and non-negative");
+        }
+        movementProgress = Math.min(MOVEMENT_COMPLETE_PROGRESS,
+                movementProgress + elapsedSeconds / TILE_MOVEMENT_DURATION_SECONDS);
+        if (!isMoving()) {
+            moveToTile(destinationTile);
         }
     }
 
-    @Override
-    protected float getRotationDegrees() {
-        return direction.getRotationDegrees();
+    public boolean isMoving() {
+        return movementProgress < MOVEMENT_COMPLETE_PROGRESS;
+    }
+
+    public GridPoint2 getDestinationTile() {
+        return new GridPoint2(destinationTile);
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public float getMovementProgress() {
+        return movementProgress;
     }
 }

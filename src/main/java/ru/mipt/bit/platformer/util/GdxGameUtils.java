@@ -4,7 +4,6 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.Map;
 import com.badlogic.gdx.maps.MapLayers;
-import com.badlogic.gdx.maps.MapRenderer;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -14,19 +13,15 @@ import com.badlogic.gdx.math.Vector2;
 
 import java.util.NoSuchElementException;
 
-import static com.badlogic.gdx.math.MathUtils.clamp;
-
 public final class GdxGameUtils {
 
-    public static final float MOVEMENT_START_PROGRESS = 0f;
-    public static final float MOVEMENT_COMPLETE_PROGRESS = 1f;
     private static final float TILE_CENTER_OFFSET = 0.5f;
     private static final float ORIGINAL_SCALE = 1f;
 
     private GdxGameUtils() {
     }
 
-    public static MapRenderer createFullMapRenderer(TiledMap tiledMap, Batch batch) {
+    public static OrthogonalTiledMapRenderer createFullMapRenderer(TiledMap tiledMap, Batch batch) {
         TiledMapTileLayer tileLayer = getOnlyTileLayer(tiledMap);
         float mapWidthPixels = tileLayer.getWidth() * tileLayer.getTileWidth();
         float mapHeightPixels = tileLayer.getHeight() * tileLayer.getTileHeight();
@@ -69,10 +64,6 @@ public final class GdxGameUtils {
         return new Rectangle()
                 .setWidth(spriteRegion.getRegionWidth())
                 .setHeight(spriteRegion.getRegionHeight());
-    }
-
-    public static float advanceMovementProgress(float currentProgress, float elapsedSeconds, float movementDurationSeconds) {
-        return clamp(currentProgress + elapsedSeconds / movementDurationSeconds, MOVEMENT_START_PROGRESS, MOVEMENT_COMPLETE_PROGRESS);
     }
 
     private static Vector2 calculateTileCenterPixels(TiledMapTileLayer tileLayer, GridPoint2 tileCoordinates) {
