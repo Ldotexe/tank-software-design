@@ -12,7 +12,6 @@ import ru.mipt.bit.platformer.util.TileMovement;
 
 import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
 
-/** Owns a texture and converts model coordinates into screen coordinates. */
 final class SpriteRenderer implements Disposable {
     private final Texture texture;
     private final TextureRegion sprite;

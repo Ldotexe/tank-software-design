@@ -39,7 +39,6 @@ public final class FieldRenderer implements Disposable {
     @Override
     public void dispose() {
         treeRenderer.dispose();
-        // The map renderer borrows the batch and does not dispose it.
         mapRenderer.dispose();
         map.dispose();
     }

@@ -32,7 +32,6 @@ public class TileMovementTest {
         TileMovement movement = new TileMovement(new TiledMapTileLayer(10, 8, 128, 128), Interpolation.smooth);
         Rectangle sprite = new Rectangle(0, 0, 32, 32);
         movement.interpolateSpritePosition(sprite, new GridPoint2(1, 1), new GridPoint2(0, 1), 0.25f);
-        // Smoothstep at 0.25 is 0.15625; 176 - 128 * 0.15625 = 156.
         assertPosition(sprite, 156f, 176f);
     }
 

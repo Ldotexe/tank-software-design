@@ -2,7 +2,6 @@ package ru.mipt.bit.platformer;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-/** A model's position in tiles, independent of textures and screen coordinates. */
 public abstract class GameObject {
     private final GridPoint2 tilePosition;
 

@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.IntPredicate;
 
-/** Executes registered actions in registration order, once per matching binding. */
 public final class KeyboardHandler {
     private final IntPredicate isKeyPressed;
     private final IntPredicate isKeyJustPressed;
