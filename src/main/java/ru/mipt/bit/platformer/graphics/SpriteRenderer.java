@@ -8,9 +8,9 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Disposable;
-import ru.mipt.bit.platformer.util.TileMovement;
+import ru.mipt.bit.platformer.graphics.util.TileMovement;
 
-import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
+import static ru.mipt.bit.platformer.graphics.util.GdxGameUtils.*;
 
 final class SpriteRenderer implements Disposable {
     private final Texture texture;
@@ -18,11 +18,11 @@ final class SpriteRenderer implements Disposable {
     private final Rectangle bounds;
     private final TileMovement tileMovement;
 
-    SpriteRenderer(String texturePath, TiledMapTileLayer tileLayer) {
+    SpriteRenderer(String texturePath, TiledMapTileLayer tileLayer, Interpolation interpolation) {
         texture = new Texture(texturePath);
         sprite = new TextureRegion(texture);
         bounds = createSpriteBounds(sprite);
-        tileMovement = new TileMovement(tileLayer, Interpolation.smooth);
+        tileMovement = new TileMovement(tileLayer, interpolation);
     }
 
     void render(Batch batch, GridPoint2 start, GridPoint2 destination,
