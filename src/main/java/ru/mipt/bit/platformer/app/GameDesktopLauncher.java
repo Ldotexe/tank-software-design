@@ -1,4 +1,4 @@
-package ru.mipt.bit.platformer;
+package ru.mipt.bit.platformer.app;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
@@ -13,6 +13,6 @@ public final class GameDesktopLauncher {
     public static void main(String[] args) {
         Lwjgl3ApplicationConfiguration windowConfiguration = new Lwjgl3ApplicationConfiguration();
         windowConfiguration.setWindowedMode(WINDOW_WIDTH_PIXELS, WINDOW_HEIGHT_PIXELS);
-        new Lwjgl3Application(new TankGame(), windowConfiguration);
+        new Lwjgl3Application(new TankGame(DefaultGameFactory::create), windowConfiguration);
     }
 }

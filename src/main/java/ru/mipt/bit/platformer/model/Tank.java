@@ -1,22 +1,27 @@
-package ru.mipt.bit.platformer;
+package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
+import ru.mipt.bit.platformer.game.Updatable;
 
 import java.util.Objects;
 
-public final class Tank extends GameObject {
-    public static final float TILE_MOVEMENT_DURATION_SECONDS = 0.4f;
+public final class Tank extends GameObject implements Updatable {
     private static final float MOVEMENT_START_PROGRESS = 0f;
     private static final float MOVEMENT_COMPLETE_PROGRESS = 1f;
 
-    private final GameField gameField;
+    private final MovementRules movementRules;
+    private final float movementDurationSeconds;
     private final GridPoint2 destinationTile;
     private Direction direction = Direction.RIGHT;
     private float movementProgress = MOVEMENT_COMPLETE_PROGRESS;
 
-    public Tank(GameField gameField, int tileX, int tileY) {
+    public Tank(MovementRules movementRules, int tileX, int tileY, float movementDurationSeconds) {
         super(tileX, tileY);
-        this.gameField = Objects.requireNonNull(gameField);
+        this.movementRules = Objects.requireNonNull(movementRules);
+        if (!Float.isFinite(movementDurationSeconds) || movementDurationSeconds <= 0f) {
+            throw new IllegalArgumentException("Movement duration must be finite and positive");
+        }
+        this.movementDurationSeconds = movementDurationSeconds;
         destinationTile = getTilePosition();
     }
 
@@ -27,18 +32,19 @@ public final class Tank extends GameObject {
         }
         direction = requestedDirection;
         GridPoint2 adjacentTile = direction.calculateAdjacentTile(getTilePosition());
-        if (gameField.isTileUnoccupied(adjacentTile)) {
+        if (movementRules.isTileUnoccupied(adjacentTile)) {
             destinationTile.set(adjacentTile);
             movementProgress = MOVEMENT_START_PROGRESS;
         }
     }
 
-    public void updateMovement(float elapsedSeconds) {
+    @Override
+    public void update(float elapsedSeconds) {
         if (!Float.isFinite(elapsedSeconds) || elapsedSeconds < 0f) {
             throw new IllegalArgumentException("Elapsed time must be finite and non-negative");
         }
         movementProgress = Math.min(MOVEMENT_COMPLETE_PROGRESS,
-                movementProgress + elapsedSeconds / TILE_MOVEMENT_DURATION_SECONDS);
+                movementProgress + elapsedSeconds / movementDurationSeconds);
         if (!isMoving()) {
             moveToTile(destinationTile);
         }
