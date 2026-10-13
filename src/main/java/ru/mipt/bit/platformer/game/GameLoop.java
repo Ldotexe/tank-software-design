@@ -19,6 +19,10 @@ public final class GameLoop {
         view.render();
     }
 
+    public void resize(int width, int height) {
+        view.resize(width, height);
+    }
+
     public void dispose() {
         view.dispose();
     }

@@ -26,6 +26,13 @@ public final class TankGame extends ApplicationAdapter {
     }
 
     @Override
+    public void resize(int width, int height) {
+        if (game != null) {
+            game.resize(width, height);
+        }
+    }
+
+    @Override
     public void dispose() {
         game.dispose();
     }
