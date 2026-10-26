@@ -24,7 +24,7 @@ public class GameSessionTest {
 
     @Test
     public void usesSuppliedPlayerAndCollisionRules() {
-        GameField field = new GameField();
+        GameField field = new GameField(10, 8);
         field.addObstacle(new Tree(4, 6));
         Tank player = new Tank(field, 4, 4, 0.2f);
         GameSession session = new GameSession(Collections.singletonList(player));

@@ -11,7 +11,7 @@ public class TankTest {
 
     @Test
     public void startsIdleFacingRight() {
-        Tank tank = new Tank(new GameField(), 1, 1, 0.4f);
+        Tank tank = new Tank(new GameField(10, 8), 1, 1, 0.4f);
         assertFalse(tank.isMoving());
         assertEquals(Direction.RIGHT, tank.getDirection());
         assertEquals(new GridPoint2(1, 1), tank.getTilePosition());
@@ -22,7 +22,7 @@ public class TankTest {
     @Test
     public void movesOneTileInEveryDirection() {
         for (Direction direction : Direction.values()) {
-            Tank tank = new Tank(new GameField(), 2, 2, 0.4f);
+            Tank tank = new Tank(new GameField(10, 8), 2, 2, 0.4f);
             tank.tryStartMoving(direction);
             assertTrue(tank.isMoving());
             assertEquals(direction, tank.getDirection());
@@ -36,7 +36,7 @@ public class TankTest {
 
     @Test
     public void advancesProgressBeforeCommittingTilePosition() {
-        Tank tank = new Tank(new GameField(), 1, 1, 0.4f);
+        Tank tank = new Tank(new GameField(10, 8), 1, 1, 0.4f);
         tank.tryStartMoving(Direction.UP);
         tank.update(DURATION / 2);
         assertEquals(0.5f, tank.getMovementProgress(), EPSILON);
@@ -48,7 +48,7 @@ public class TankTest {
     @Test
     public void turnsButDoesNotMoveIntoTreeInAnyDirection() {
         for (Direction direction : Direction.values()) {
-            GameField field = new GameField();
+            GameField field = new GameField(10, 8);
             GridPoint2 obstacle = direction.calculateAdjacentTile(new GridPoint2(1, 1));
             field.addObstacle(new Tree(obstacle.x, obstacle.y));
             Tank tank = new Tank(field, 1, 1, 0.4f);
@@ -63,7 +63,7 @@ public class TankTest {
 
     @Test
     public void ignoresNewDirectionsDuringMovement() {
-        Tank tank = new Tank(new GameField(), 1, 1, 0.4f);
+        Tank tank = new Tank(new GameField(10, 8), 1, 1, 0.4f);
         tank.tryStartMoving(Direction.UP);
         tank.update(DURATION / 2);
         tank.tryStartMoving(Direction.LEFT);
@@ -74,7 +74,7 @@ public class TankTest {
 
     @Test
     public void largeDeltaStopsAtDestinationAndNextMoveStartsThere() {
-        Tank tank = new Tank(new GameField(), 1, 1, 0.4f);
+        Tank tank = new Tank(new GameField(10, 8), 1, 1, 0.4f);
         tank.tryStartMoving(Direction.UP);
         tank.update(DURATION * 10);
         assertEquals(1f, tank.getMovementProgress(), 0f);
@@ -86,7 +86,7 @@ public class TankTest {
 
     @Test
     public void zeroDeltaAndIdleUpdatesDoNotMoveTank() {
-        Tank tank = new Tank(new GameField(), 1, 1, 0.4f);
+        Tank tank = new Tank(new GameField(10, 8), 1, 1, 0.4f);
         tank.update(DURATION);
         assertEquals(new GridPoint2(1, 1), tank.getTilePosition());
         tank.tryStartMoving(Direction.UP);
@@ -96,7 +96,7 @@ public class TankTest {
 
     @Test
     public void rejectsInvalidTimeWithoutChangingProgress() {
-        Tank tank = new Tank(new GameField(), 1, 1, 0.4f);
+        Tank tank = new Tank(new GameField(10, 8), 1, 1, 0.4f);
         tank.tryStartMoving(Direction.UP);
         for (float invalid : new float[]{-1f, Float.NaN, Float.POSITIVE_INFINITY, Float.NEGATIVE_INFINITY}) {
             assertThrows(IllegalArgumentException.class, () -> tank.update(invalid));
@@ -106,7 +106,7 @@ public class TankTest {
 
     @Test
     public void returnedCoordinatesCannotChangeMovement() {
-        Tank tank = new Tank(new GameField(), 1, 1, 0.4f);
+        Tank tank = new Tank(new GameField(10, 8), 1, 1, 0.4f);
         tank.tryStartMoving(Direction.UP);
         tank.getTilePosition().set(99, 99);
         tank.getDestinationTile().set(99, 99);
