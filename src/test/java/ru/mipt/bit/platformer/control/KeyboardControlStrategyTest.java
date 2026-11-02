@@ -3,6 +3,9 @@ package ru.mipt.bit.platformer.control;
 import com.badlogic.gdx.math.GridPoint2;
 import org.junit.Test;
 import ru.mipt.bit.platformer.command.Command;
+import ru.mipt.bit.platformer.command.MoveCommand;
+import ru.mipt.bit.platformer.command.ShootCommand;
+import ru.mipt.bit.platformer.model.Bullet;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.GameField;
 import ru.mipt.bit.platformer.model.Tank;
@@ -90,6 +93,58 @@ public class KeyboardControlStrategyTest {
                 () -> new KeyboardControlStrategy(key -> false).getCommands(null));
     }
 
+    @Test
+    public void spaceProducesShotOnlyOnNewPress() {
+        Set<Integer> justPressed = new HashSet<>(Arrays.asList(SPACE));
+        KeyboardControlStrategy strategy = new KeyboardControlStrategy(key -> key == SPACE, justPressed::contains);
+        Tank tank = tank();
+        List<Command> firstPress = strategy.getCommands(tank);
+        assertEquals(1, firstPress.size());
+        assertTrue(firstPress.get(0) instanceof ShootCommand);
+        justPressed.clear();
+        assertTrue(strategy.getCommands(tank).isEmpty());
+        justPressed.add(SPACE);
+        assertEquals(1, strategy.getCommands(tank).size());
+    }
+
+    @Test
+    public void moveAndShotAreCollectedBeforeEitherIsExecuted() {
+        GameField field = new GameField(4, 3);
+        Tank tank = new Tank(field, 1, 1, 0.4f);
+        field.addObstacle(tank);
+        KeyboardControlStrategy strategy = new KeyboardControlStrategy(key -> key == UP, key -> key == SPACE);
+        List<Command> commands = strategy.getCommands(tank);
+        assertEquals(2, commands.size());
+        assertTrue(commands.get(0) instanceof MoveCommand);
+        assertTrue(commands.get(1) instanceof ShootCommand);
+        assertEquals(Direction.RIGHT, tank.getDirection());
+        assertFalse(tank.isMoving());
+        assertEquals(1, field.getObjects().size());
+        commands.forEach(Command::execute);
+        Bullet bullet = (Bullet) field.getObjects().stream()
+                .filter(object -> object instanceof Bullet).findFirst().get();
+        assertEquals(Direction.UP, bullet.getDirection());
+    }
+
+    @Test
+    public void movingTankCanShootButReceivesNoNewMovementCommand() {
+        Tank tank = tank();
+        tank.tryStartMoving(Direction.UP);
+        tank.update(0.2f);
+        KeyboardControlStrategy strategy = new KeyboardControlStrategy(key -> key == LEFT, key -> key == SPACE);
+        List<Command> commands = strategy.getCommands(tank);
+        assertEquals(1, commands.size());
+        assertTrue(commands.get(0) instanceof ShootCommand);
+        commands.get(0).execute();
+        assertEquals(Direction.UP, tank.getDirection());
+        assertEquals(0.5f, tank.getMovementProgress(), 0.00001f);
+    }
+
+    @Test
+    public void rejectsMissingJustPressedInput() {
+        assertThrows(NullPointerException.class, () -> new KeyboardControlStrategy(key -> false, null));
+    }
+
     private void assertDirection(int key, Direction direction) {
         Tank tank = tank();
         List<Command> commands = new KeyboardControlStrategy(candidate -> candidate == key).getCommands(tank);
@@ -101,6 +156,9 @@ public class KeyboardControlStrategyTest {
     }
 
     private Tank tank() {
-        return new Tank(new GameField(4, 3), 1, 1, 0.4f);
+        GameField field = new GameField(4, 3);
+        Tank tank = new Tank(field, 1, 1, 0.4f);
+        field.addObstacle(tank);
+        return tank;
     }
 }

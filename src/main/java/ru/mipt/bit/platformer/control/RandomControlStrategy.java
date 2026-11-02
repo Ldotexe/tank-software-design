@@ -2,6 +2,7 @@ package ru.mipt.bit.platformer.control;
 
 import ru.mipt.bit.platformer.command.Command;
 import ru.mipt.bit.platformer.command.MoveCommand;
+import ru.mipt.bit.platformer.command.ShootCommand;
 import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.Tank;
 
@@ -25,7 +26,13 @@ public final class RandomControlStrategy implements TankControlStrategy {
     @Override
     public List<Command> getCommands(Tank tank) {
         Objects.requireNonNull(tank);
-        Direction direction = DIRECTIONS[random.nextInt(DIRECTIONS.length)];
-        return Collections.singletonList(new MoveCommand(tank, direction));
+        int action = random.nextInt(DIRECTIONS.length + 1);
+        if (action == DIRECTIONS.length) {
+            return Collections.singletonList(new ShootCommand(tank));
+        }
+        if (tank.isMoving()) {
+            return Collections.emptyList();
+        }
+        return Collections.singletonList(new MoveCommand(tank, DIRECTIONS[action]));
     }
 }

@@ -1,12 +1,15 @@
 package ru.mipt.bit.platformer.control;
 
 import ru.mipt.bit.platformer.command.Command;
-import ru.mipt.bit.platformer.game.InputHandler;
+import ru.mipt.bit.platformer.game.CommandSource;
 import ru.mipt.bit.platformer.model.Tank;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
-public final class TankController implements InputHandler {
+public final class TankController implements CommandSource {
     private final Tank tank;
     private final TankControlStrategy strategy;
 
@@ -16,12 +19,10 @@ public final class TankController implements InputHandler {
     }
 
     @Override
-    public void handleInput() {
-        if (tank.isMoving()) {
-            return;
+    public List<Command> getCommands() {
+        if (!tank.isAlive()) {
+            return Collections.emptyList();
         }
-        for (Command command : strategy.getCommands(tank)) {
-            command.execute();
-        }
+        return new ArrayList<>(strategy.getCommands(tank));
     }
 }

@@ -2,7 +2,10 @@ package ru.mipt.bit.platformer.level;
 
 import com.badlogic.gdx.math.GridPoint2;
 import org.junit.Test;
+import ru.mipt.bit.platformer.model.Bullet;
+import ru.mipt.bit.platformer.model.BulletSettings;
 import ru.mipt.bit.platformer.model.Direction;
+import ru.mipt.bit.platformer.model.GameSession;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
 
@@ -116,6 +119,23 @@ public class TankSpawnerTest {
         TankSpawner spawner = new TankSpawner(new Random(1));
         assertThrows(NullPointerException.class, () -> spawner.spawn(null, 0, 0.4f));
         assertThrows(IllegalArgumentException.class, () -> spawner.spawn(layout, 0, 0f));
+    }
+
+    @Test
+    public void registersInitialSceneAndUsesCombatSettingsForSpawnedTanks() {
+        LevelLayout layout = new LevelLayout(5, 2, Collections.singletonList(new Tree(2, 1)), new GridPoint2(0, 0));
+        TankGroup group = new TankSpawner(new Random(42)).spawn(layout, 1, 0.4f, 120,
+                new BulletSettings(40, 0.2f));
+        assertEquals(3, group.getField().getObjects().size());
+        assertTrue(group.getField().contains(group.getPlayer()));
+        for (Tank tank : group.getTanks()) {
+            assertEquals(120, tank.getHealth());
+        }
+        group.getPlayer().shoot();
+        Bullet bullet = (Bullet) group.getField().getObjects().stream()
+                .filter(object -> object instanceof Bullet).findFirst().get();
+        assertEquals(40, bullet.getDamage());
+        new GameSession(group.getField()).update(0f);
     }
 
     private List<GridPoint2> positions(List<Tank> tanks) {
