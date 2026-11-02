@@ -19,7 +19,11 @@ final class SpriteRenderer implements Disposable {
     private final TileMovement tileMovement;
 
     SpriteRenderer(String texturePath, TiledMapTileLayer tileLayer, Interpolation interpolation) {
-        texture = new Texture(texturePath);
+        this(new Texture(texturePath), tileLayer, interpolation);
+    }
+
+    SpriteRenderer(Texture texture, TiledMapTileLayer tileLayer, Interpolation interpolation) {
+        this.texture = texture;
         sprite = new TextureRegion(texture);
         bounds = createSpriteBounds(sprite);
         tileMovement = new TileMovement(tileLayer, interpolation);

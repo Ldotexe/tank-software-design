@@ -1,6 +1,7 @@
 package ru.mipt.bit.platformer.level;
 
 import org.junit.Test;
+import ru.mipt.bit.platformer.model.GameField;
 import ru.mipt.bit.platformer.model.Tank;
 
 import java.util.ArrayList;
@@ -16,8 +17,10 @@ public class TankGroupTest {
         Tank bot = new Tank(tile -> true, 1, 0, 0.4f);
         List<Tank> bots = new ArrayList<>();
         bots.add(bot);
-        TankGroup group = new TankGroup(player, bots);
+        GameField field = new GameField(2, 1);
+        TankGroup group = new TankGroup(field, player, bots);
         bots.clear();
+        assertSame(field, group.getField());
         assertSame(player, group.getPlayer());
         assertEquals(Arrays.asList(bot), group.getBots());
         assertEquals(Arrays.asList(player, bot), group.getTanks());
@@ -26,7 +29,7 @@ public class TankGroupTest {
     @Test
     public void callersCannotRemoveRegisteredTanks() {
         Tank player = new Tank(tile -> true, 0, 0, 0.4f);
-        TankGroup group = new TankGroup(player, new ArrayList<>());
+        TankGroup group = new TankGroup(new GameField(1, 1), player, new ArrayList<>());
         assertThrows(UnsupportedOperationException.class, () -> group.getBots().clear());
         assertThrows(UnsupportedOperationException.class, () -> group.getTanks().clear());
     }
