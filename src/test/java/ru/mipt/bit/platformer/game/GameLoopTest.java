@@ -54,6 +54,28 @@ public class GameLoopTest {
         assertThrows(NullPointerException.class, () -> new GameLoop(() -> { }, time -> { }, null));
     }
 
+    @Test
+    public void forwardsWindowSizeToView() {
+        List<String> calls = new ArrayList<>();
+        GameView view = new GameView() {
+            @Override
+            public void render() {
+            }
+
+            @Override
+            public void resize(int width, int height) {
+                calls.add(width + "x" + height);
+            }
+
+            @Override
+            public void dispose() {
+            }
+        };
+        GameLoop loop = new GameLoop(() -> calls.add("input"), time -> calls.add("update"), view);
+        loop.resize(640, 360);
+        assertEquals(Arrays.asList("640x360"), calls);
+    }
+
     private GameView view(Runnable render, Runnable dispose) {
         return new GameView() {
             @Override
