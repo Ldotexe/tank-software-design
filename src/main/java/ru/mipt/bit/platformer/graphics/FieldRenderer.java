@@ -5,40 +5,36 @@ import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.utils.Disposable;
-import ru.mipt.bit.platformer.GameField;
-import ru.mipt.bit.platformer.Tree;
 
-import static ru.mipt.bit.platformer.util.GdxGameUtils.*;
+import static ru.mipt.bit.platformer.graphics.util.GdxGameUtils.*;
+import static ru.mipt.bit.platformer.graphics.util.TileLayerResizer.resize;
 
-public final class FieldRenderer implements Disposable {
+public final class FieldRenderer implements RenderLayer {
     private final TiledMap map;
     private final OrthogonalTiledMapRenderer mapRenderer;
-    private final TreeRenderer treeRenderer;
 
-    public FieldRenderer(String mapPath, Batch batch) {
+    public FieldRenderer(String mapPath, Batch batch, int width, int height) {
         map = new TmxMapLoader().load(mapPath);
+        TiledMapTileLayer source = getOnlyTileLayer(map);
+        map.getLayers().remove(source);
+        map.getLayers().add(resize(source, width, height));
         mapRenderer = createFullMapRenderer(map, batch);
-        treeRenderer = new TreeRenderer(getTileLayer());
     }
 
     public TiledMapTileLayer getTileLayer() {
         return getOnlyTileLayer(map);
     }
 
-    public void renderGround() {
+    @Override
+    public void render(Batch batch) {
+        TiledMapTileLayer layer = getTileLayer();
+        mapRenderer.setView(batch.getProjectionMatrix(), 0f, 0f,
+                layer.getWidth() * layer.getTileWidth(), layer.getHeight() * layer.getTileHeight());
         mapRenderer.render();
-    }
-
-    public void renderObstacles(Batch batch, GameField field) {
-        for (Tree tree : field.getTrees()) {
-            treeRenderer.render(batch, tree);
-        }
     }
 
     @Override
     public void dispose() {
-        treeRenderer.dispose();
         mapRenderer.dispose();
         map.dispose();
     }

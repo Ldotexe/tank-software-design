@@ -1,11 +1,13 @@
 package ru.mipt.bit.platformer.input;
 
+import ru.mipt.bit.platformer.game.InputHandler;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.IntPredicate;
 
-public final class KeyboardHandler {
+public final class KeyboardHandler implements InputHandler {
     private final IntPredicate isKeyPressed;
     private final IntPredicate isKeyJustPressed;
     private final List<Runnable> bindings = new ArrayList<>();
@@ -39,6 +41,7 @@ public final class KeyboardHandler {
         });
     }
 
+    @Override
     public void handleInput() {
         for (Runnable binding : bindings) {
             binding.run();
