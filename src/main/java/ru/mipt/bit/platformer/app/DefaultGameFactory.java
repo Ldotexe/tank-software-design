@@ -8,19 +8,22 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import ru.mipt.bit.platformer.command.Command;
 import ru.mipt.bit.platformer.control.KeyboardControlStrategy;
 import ru.mipt.bit.platformer.control.RandomControlStrategy;
 import ru.mipt.bit.platformer.control.TankController;
-import ru.mipt.bit.platformer.command.Command;
 import ru.mipt.bit.platformer.game.CommandSource;
 import ru.mipt.bit.platformer.game.GameLoop;
+import ru.mipt.bit.platformer.game.HealthBarVisibility;
+import ru.mipt.bit.platformer.graphics.BulletRenderer;
 import ru.mipt.bit.platformer.graphics.FieldRenderer;
 import ru.mipt.bit.platformer.graphics.GameRenderer;
-import ru.mipt.bit.platformer.graphics.BulletRenderer;
+import ru.mipt.bit.platformer.graphics.HealthBarRenderer;
 import ru.mipt.bit.platformer.graphics.ObservedObjectLayer;
 import ru.mipt.bit.platformer.graphics.RenderLayer;
 import ru.mipt.bit.platformer.graphics.TankRenderer;
 import ru.mipt.bit.platformer.graphics.TreeRenderer;
+import ru.mipt.bit.platformer.input.GameControls;
 import ru.mipt.bit.platformer.level.LevelLayout;
 import ru.mipt.bit.platformer.level.TankGroup;
 import ru.mipt.bit.platformer.model.Bullet;
@@ -46,6 +49,8 @@ public final class DefaultGameFactory {
     public static GameLoop create(LevelLayout layout, TankGroup tanks) {
         GameField field = tanks.getField();
         GameSession session = new GameSession(field);
+        HealthBarVisibility healthBars = new HealthBarVisibility();
+        GameControls gameControls = new GameControls(Gdx.input::isKeyJustPressed, healthBars);
         List<TankController> controllers = new ArrayList<>();
         controllers.add(new TankController(tanks.getPlayer(),
                 new KeyboardControlStrategy(Gdx.input::isKeyPressed, Gdx.input::isKeyJustPressed)));
@@ -53,7 +58,7 @@ public final class DefaultGameFactory {
             controllers.add(new TankController(bot, new RandomControlStrategy(new Random())));
         }
         CommandSource input = () -> {
-            List<Command> commands = new ArrayList<>();
+            List<Command> commands = new ArrayList<>(gameControls.getCommands());
             for (TankController controller : controllers) {
                 commands.addAll(controller.getCommands());
             }
@@ -66,9 +71,13 @@ public final class DefaultGameFactory {
         List<RenderLayer> layers = Arrays.asList(
                 fieldRenderer,
                 new ObservedObjectLayer<>(field, Tank.class, tank -> tank == tanks.getPlayer(),
-                        new TankRenderer(tileLayer, TANK_TEXTURE_PATH, Interpolation.smooth)),
+                        new HealthBarRenderer(
+                                new TankRenderer(tileLayer, TANK_TEXTURE_PATH, Interpolation.smooth),
+                                tileLayer, Interpolation.smooth, healthBars)),
                 new ObservedObjectLayer<>(field, Tank.class, tank -> tank != tanks.getPlayer(),
-                        new TankRenderer(tileLayer, TANK_TEXTURE_PATH, Interpolation.smooth, Color.GRAY)),
+                        new HealthBarRenderer(
+                                new TankRenderer(tileLayer, TANK_TEXTURE_PATH, Interpolation.smooth, Color.GRAY),
+                                tileLayer, Interpolation.smooth, healthBars)),
                 new ObservedObjectLayer<>(field, Tree.class, tree -> true,
                         new TreeRenderer(tileLayer, TREE_TEXTURE_PATH, Interpolation.smooth)),
                 new ObservedObjectLayer<>(field, Bullet.class, bullet -> true, new BulletRenderer(tileLayer))
