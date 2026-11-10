@@ -5,7 +5,7 @@ import ru.mipt.bit.platformer.game.Updatable;
 
 import java.util.Objects;
 
-public final class Tank extends GameObject implements Updatable {
+public final class Tank extends GameObject implements Obstacle, Updatable {
     private static final float MOVEMENT_START_PROGRESS = 0f;
     private static final float MOVEMENT_COMPLETE_PROGRESS = 1f;
 
@@ -52,6 +52,11 @@ public final class Tank extends GameObject implements Updatable {
 
     public boolean isMoving() {
         return movementProgress < MOVEMENT_COMPLETE_PROGRESS;
+    }
+
+    @Override
+    public boolean occupiesTile(GridPoint2 tileCoordinates) {
+        return getTilePosition().equals(tileCoordinates) || destinationTile.equals(tileCoordinates);
     }
 
     public GridPoint2 getDestinationTile() {

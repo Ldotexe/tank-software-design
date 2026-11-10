@@ -31,7 +31,7 @@ public class PlayerControlsTest {
     }
 
     private void assertMovement(int key, Direction direction) {
-        Tank tank = new Tank(new GameField(), 1, 1, 0.4f);
+        Tank tank = new Tank(new GameField(10, 8), 1, 1, 0.4f);
         KeyboardHandler keyboard = new KeyboardHandler(candidate -> candidate == key, candidate -> false);
         PlayerControls.bindMovement(keyboard, tank::tryStartMoving);
         keyboard.handleInput();
@@ -42,7 +42,7 @@ public class PlayerControlsTest {
 
     @Test
     public void simultaneousMovementKeysPreserveOriginalPriority() {
-        Tank tank = new Tank(new GameField(), 1, 1, 0.4f);
+        Tank tank = new Tank(new GameField(10, 8), 1, 1, 0.4f);
         KeyboardHandler keyboard = new KeyboardHandler(key -> true, key -> false);
         PlayerControls.bindMovement(keyboard, tank::tryStartMoving);
         keyboard.handleInput();
@@ -52,7 +52,7 @@ public class PlayerControlsTest {
 
     @Test
     public void blockedDirectionAllowsNextHeldDirection() {
-        GameField field = new GameField();
+        GameField field = new GameField(10, 8);
         field.addObstacle(new Tree(1, 2));
         Tank tank = new Tank(field, 1, 1, 0.4f);
         Set<Integer> pressed = new HashSet<>(Arrays.asList(UP, LEFT));
@@ -65,7 +65,7 @@ public class PlayerControlsTest {
 
     @Test
     public void holdingMovementContinuesAfterPreviousTileIsReached() {
-        Tank tank = new Tank(new GameField(), 1, 1, 0.4f);
+        Tank tank = new Tank(new GameField(10, 8), 1, 1, 0.4f);
         KeyboardHandler keyboard = new KeyboardHandler(key -> key == RIGHT, key -> false);
         PlayerControls.bindMovement(keyboard, tank::tryStartMoving);
         keyboard.handleInput();
