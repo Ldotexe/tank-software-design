@@ -55,6 +55,21 @@ public class ShootCommandTest {
     }
 
     @Test
+    public void shotQueuedBeforeHeavyDamageUsesStateAtExecutionTime() {
+        GameField field = new GameField(5, 4);
+        Tank tank = addTank(field, 1, 1);
+        Command shoot = new ShootCommand(tank);
+
+        tank.takeDamage(86);
+        shoot.execute();
+
+        assertTrue(tank.isAlive());
+        assertEquals(14, tank.getHealth());
+        assertEquals(1, field.getObjects().size());
+        assertFalse(field.getObjects().stream().anyMatch(object -> object instanceof Bullet));
+    }
+
+    @Test
     public void removedTankCannotExecuteAlreadyQueuedCommands() {
         GameField field = new GameField(5, 4);
         Tank tank = addTank(field, 1, 1);

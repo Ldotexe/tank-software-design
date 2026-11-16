@@ -141,6 +141,22 @@ public class KeyboardControlStrategyTest {
     }
 
     @Test
+    public void spaceCannotMakeHeavilyDamagedTankShoot() {
+        GameField field = new GameField(4, 3);
+        Tank tank = new Tank(field, 1, 1, 0.4f);
+        field.addObject(tank);
+        tank.takeDamage(86);
+        KeyboardControlStrategy strategy = new KeyboardControlStrategy(key -> false, key -> key == SPACE);
+
+        strategy.getCommands(tank).forEach(Command::execute);
+
+        assertTrue(tank.isAlive());
+        assertEquals(14, tank.getHealth());
+        assertFalse(tank.isMoving());
+        assertEquals(1, field.getObjects().size());
+    }
+
+    @Test
     public void rejectsMissingJustPressedInput() {
         assertThrows(NullPointerException.class, () -> new KeyboardControlStrategy(key -> false, null));
     }

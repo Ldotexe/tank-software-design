@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+/**
+ * Графический адаптер событий {@link LevelListener}, обновляющий состав отрисовываемых объектов.
+ */
 public final class ObservedObjectLayer<T extends GameObject> implements RenderLayer, LevelListener {
     private final GameField field;
     private final Class<T> type;

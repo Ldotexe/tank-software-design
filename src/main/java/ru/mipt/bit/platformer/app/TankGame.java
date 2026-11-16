@@ -7,6 +7,9 @@ import ru.mipt.bit.platformer.game.GameLoop;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+/**
+ * Входной адаптер жизненного цикла LibGDX к прикладному порту {@link GameLoop}.
+ */
 public final class TankGame extends ApplicationAdapter {
     private final Supplier<GameLoop> gameFactory;
     private GameLoop game;

@@ -11,6 +11,9 @@ import java.util.function.IntPredicate;
 
 import static com.badlogic.gdx.Input.Keys.L;
 
+/**
+ * Клавиатурный адаптер {@link CommandSource} для общих команд игры.
+ */
 public final class GameControls implements CommandSource {
     private final KeyboardHandler keyboard;
     private final List<Command> commands = new ArrayList<>();

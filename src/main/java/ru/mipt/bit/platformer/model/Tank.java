@@ -2,6 +2,8 @@ package ru.mipt.bit.platformer.model;
 
 import com.badlogic.gdx.math.GridPoint2;
 import ru.mipt.bit.platformer.game.Updatable;
+import ru.mipt.bit.platformer.model.state.LightDamageState;
+import ru.mipt.bit.platformer.model.state.TankState;
 
 import java.util.Objects;
 
@@ -17,6 +19,7 @@ public final class Tank extends GameObject implements Obstacle, Updatable {
     private final BulletSettings bulletSettings;
     private final int maxHealth;
     private int health;
+    private TankState state;
     private Direction direction = Direction.RIGHT;
     private double movementProgress = MOVEMENT_COMPLETE_PROGRESS;
 
@@ -38,6 +41,7 @@ public final class Tank extends GameObject implements Obstacle, Updatable {
         this.maxHealth = health;
         this.health = health;
         this.bulletSettings = Objects.requireNonNull(bulletSettings);
+        changeState(LightDamageState.INSTANCE.onHealthChanged(health, maxHealth));
         destinationTile = getTilePosition();
     }
 
@@ -66,11 +70,13 @@ public final class Tank extends GameObject implements Obstacle, Updatable {
         if (!isAlive() || !isActive() || !isMoving()) {
             return;
         }
-        if (elapsedSeconds >= timeUntilArrival()) {
+        double duration = effectiveMovementDuration();
+        double remainingTime = (MOVEMENT_COMPLETE_PROGRESS - movementProgress) * duration;
+        if (elapsedSeconds >= remainingTime) {
             movementProgress = MOVEMENT_COMPLETE_PROGRESS;
         } else {
             movementProgress = Math.min(MOVEMENT_COMPLETE_PROGRESS,
-                    movementProgress + elapsedSeconds / movementDurationSeconds);
+                    movementProgress + elapsedSeconds / duration);
         }
         if (!isMoving()) {
             moveToTile(destinationTile);
@@ -78,7 +84,19 @@ public final class Tank extends GameObject implements Obstacle, Updatable {
     }
 
     double timeUntilArrival() {
-        return (MOVEMENT_COMPLETE_PROGRESS - movementProgress) * movementDurationSeconds;
+        return (MOVEMENT_COMPLETE_PROGRESS - movementProgress) * effectiveMovementDuration();
+    }
+
+    private double effectiveMovementDuration() {
+        return movementDurationSeconds / checkedSpeedMultiplier(state);
+    }
+
+    private double checkedSpeedMultiplier(TankState candidate) {
+        double multiplier = candidate.getSpeedMultiplier();
+        if (!Double.isFinite(multiplier) || multiplier <= 0d) {
+            throw new IllegalArgumentException("Speed multiplier must be finite and positive");
+        }
+        return multiplier;
     }
 
     public boolean isMoving() {
@@ -89,12 +107,14 @@ public final class Tank extends GameObject implements Obstacle, Updatable {
         if (!isAlive() || !isActive()) {
             return;
         }
-        EntityWorld world = getWorld();
-        if (world == null) {
-            throw new IllegalStateException("Tank must be added to a level before shooting");
-        }
-        GridPoint2 start = direction.calculateAdjacentTile(getTilePosition());
-        world.addObject(new Bullet(this, start, direction, bulletSettings));
+        state.shoot(() -> {
+            EntityWorld world = getWorld();
+            if (world == null) {
+                throw new IllegalStateException("Tank must be added to a level before shooting");
+            }
+            GridPoint2 start = direction.calculateAdjacentTile(getTilePosition());
+            world.addObject(new Bullet(this, start, direction, bulletSettings));
+        });
     }
 
     public void takeDamage(int damage) {
@@ -105,6 +125,7 @@ public final class Tank extends GameObject implements Obstacle, Updatable {
             return;
         }
         health -= damage;
+        changeState(state.onHealthChanged(health, maxHealth));
         if (!isAlive() && getWorld() != null) {
             getWorld().removeObject(this);
         }
@@ -116,6 +137,16 @@ public final class Tank extends GameObject implements Obstacle, Updatable {
 
     public int getMaxHealth() {
         return maxHealth;
+    }
+
+    public TankState getState() {
+        return state;
+    }
+
+    public void changeState(TankState state) {
+        Objects.requireNonNull(state);
+        checkedSpeedMultiplier(state);
+        this.state = state;
     }
 
     public boolean isAlive() {

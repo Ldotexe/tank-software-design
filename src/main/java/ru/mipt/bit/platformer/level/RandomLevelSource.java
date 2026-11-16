@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+/**
+ * Адаптер {@link LevelSource}, создающий случайное описание уровня.
+ */
 public final class RandomLevelSource implements LevelSource {
     private final int width;
     private final int height;

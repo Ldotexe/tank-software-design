@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Файловый адаптер {@link LevelSource}, читающий текстовую карту.
+ */
 public final class FileLevelSource implements LevelSource {
     private final Path path;
 
