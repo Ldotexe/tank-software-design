@@ -6,6 +6,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * Входной порт приложения: обновление кадра, изменение размера окна и завершение игры.
+ */
 public final class GameLoop {
     private final CommandSource input;
     private final Updatable model;

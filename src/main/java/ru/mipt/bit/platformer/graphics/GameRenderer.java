@@ -12,6 +12,9 @@ import java.util.Objects;
 
 import static com.badlogic.gdx.graphics.GL20.GL_COLOR_BUFFER_BIT;
 
+/**
+ * Графический адаптер выходного порта {@link GameView} на LibGDX.
+ */
 public final class GameRenderer implements GameView {
     private final Batch batch;
     private final List<RenderLayer> layers;

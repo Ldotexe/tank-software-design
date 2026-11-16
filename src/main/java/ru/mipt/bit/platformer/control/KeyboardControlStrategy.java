@@ -15,6 +15,9 @@ import java.util.function.IntPredicate;
 
 import static com.badlogic.gdx.Input.Keys.SPACE;
 
+/**
+ * Клавиатурная часть входного адаптера: переводит нажатия в команды танка.
+ */
 public final class KeyboardControlStrategy implements TankControlStrategy {
     private final KeyboardHandler keyboard;
     private final List<Direction> pressedDirections = new ArrayList<>();

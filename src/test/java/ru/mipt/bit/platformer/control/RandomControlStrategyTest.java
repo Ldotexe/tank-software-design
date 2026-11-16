@@ -70,6 +70,20 @@ public class RandomControlStrategyTest {
     }
 
     @Test
+    public void randomShotCannotBypassHeavyDamageState() {
+        GameField field = new GameField(4, 3);
+        Tank tank = new Tank(field, 1, 1, 0.4f);
+        field.addObject(tank);
+        tank.takeDamage(86);
+        RandomControlStrategy strategy = new RandomControlStrategy(fixedAction(Direction.values().length));
+
+        strategy.getCommands(tank).forEach(Command::execute);
+
+        assertTrue(tank.isAlive());
+        assertEquals(1, field.getObjects().size());
+    }
+
+    @Test
     public void rejectsMissingRandomAndTank() {
         assertThrows(NullPointerException.class, () -> new RandomControlStrategy(null));
         assertThrows(NullPointerException.class,
