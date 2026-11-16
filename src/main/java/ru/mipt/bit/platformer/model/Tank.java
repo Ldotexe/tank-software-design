@@ -15,6 +15,7 @@ public final class Tank extends GameObject implements Obstacle, Updatable {
     private final float movementDurationSeconds;
     private final GridPoint2 destinationTile;
     private final BulletSettings bulletSettings;
+    private final int maxHealth;
     private int health;
     private Direction direction = Direction.RIGHT;
     private double movementProgress = MOVEMENT_COMPLETE_PROGRESS;
@@ -34,6 +35,7 @@ public final class Tank extends GameObject implements Obstacle, Updatable {
             throw new IllegalArgumentException("Initial tank health must be non-negative");
         }
         this.movementDurationSeconds = movementDurationSeconds;
+        this.maxHealth = health;
         this.health = health;
         this.bulletSettings = Objects.requireNonNull(bulletSettings);
         destinationTile = getTilePosition();
@@ -110,6 +112,10 @@ public final class Tank extends GameObject implements Obstacle, Updatable {
 
     public int getHealth() {
         return health;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
     }
 
     public boolean isAlive() {
