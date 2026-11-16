@@ -1,6 +1,7 @@
 package ru.mipt.bit.platformer.level;
 
 import com.badlogic.gdx.math.GridPoint2;
+import ru.mipt.bit.platformer.model.BulletSettings;
 import ru.mipt.bit.platformer.model.GameField;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
@@ -19,6 +20,11 @@ public final class TankSpawner {
     }
 
     public TankGroup spawn(LevelLayout layout, int botCount, float movementDurationSeconds) {
+        return spawn(layout, botCount, movementDurationSeconds, Tank.DEFAULT_HEALTH, BulletSettings.DEFAULT);
+    }
+
+    public TankGroup spawn(LevelLayout layout, int botCount, float movementDurationSeconds,
+                           int health, BulletSettings bulletSettings) {
         Objects.requireNonNull(layout);
         if (botCount < 0) {
             throw new IllegalArgumentException("Bot count must be non-negative");
@@ -34,13 +40,14 @@ public final class TankSpawner {
         }
         GameField field = new GameField(layout.getWidth(), layout.getHeight());
         for (Tree tree : layout.getTrees()) {
-            field.addObstacle(tree);
+            GridPoint2 position = tree.getTilePosition();
+            field.addObstacle(new Tree(position.x, position.y));
         }
         GridPoint2 start = layout.getPlayerStart();
-        Tank player = new Tank(field, start.x, start.y, movementDurationSeconds);
+        Tank player = new Tank(field, start.x, start.y, movementDurationSeconds, health, bulletSettings);
         field.addObstacle(player);
         if (botCount == 0) {
-            return new TankGroup(player, Collections.emptyList());
+            return new TankGroup(field, player, Collections.emptyList());
         }
         List<GridPoint2> freeTiles = new ArrayList<>((int) freeCount);
         for (int y = 0; y < layout.getHeight(); y++) {
@@ -55,10 +62,10 @@ public final class TankSpawner {
         List<Tank> bots = new ArrayList<>(botCount);
         for (int index = 0; index < botCount; index++) {
             GridPoint2 position = freeTiles.get(index);
-            Tank bot = new Tank(field, position.x, position.y, movementDurationSeconds);
+            Tank bot = new Tank(field, position.x, position.y, movementDurationSeconds, health, bulletSettings);
             field.addObstacle(bot);
             bots.add(bot);
         }
-        return new TankGroup(player, bots);
+        return new TankGroup(field, player, bots);
     }
 }

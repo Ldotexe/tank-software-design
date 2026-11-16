@@ -2,17 +2,21 @@ package ru.mipt.bit.platformer.control;
 
 import com.badlogic.gdx.math.GridPoint2;
 import org.junit.Test;
+import ru.mipt.bit.platformer.command.Command;
+import ru.mipt.bit.platformer.command.MoveCommand;
 import ru.mipt.bit.platformer.game.GameLoop;
 import ru.mipt.bit.platformer.game.GameView;
 import ru.mipt.bit.platformer.level.LevelLayout;
 import ru.mipt.bit.platformer.level.TankGroup;
 import ru.mipt.bit.platformer.level.TankSpawner;
 import ru.mipt.bit.platformer.model.GameSession;
+import ru.mipt.bit.platformer.model.Direction;
 import ru.mipt.bit.platformer.model.Tank;
 import ru.mipt.bit.platformer.model.Tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -32,10 +36,18 @@ public class TankSimulationTest {
         for (int index = 0; index < group.getBots().size(); index++) {
             Tank bot = group.getBots().get(index);
             initialBotPositions.add(bot.getTilePosition());
-            controllers.add(new TankController(bot, new RandomControlStrategy(new Random(100 + index))));
+            Random random = new Random(100 + index);
+            controllers.add(new TankController(bot, tank -> tank.isMoving() ? Collections.emptyList()
+                    : Collections.singletonList(new MoveCommand(tank,
+                    Direction.values()[random.nextInt(Direction.values().length)]))));
         }
-        GameLoop loop = new GameLoop(() -> controllers.forEach(TankController::handleInput),
-                new GameSession(group.getTanks()), new GameView() {
+        GameLoop loop = new GameLoop(() -> {
+            List<Command> commands = new ArrayList<>();
+            for (TankController controller : controllers) {
+                commands.addAll(controller.getCommands());
+            }
+            return commands;
+        }, new GameSession(group.getField()), new GameView() {
                     @Override
                     public void render() {
                     }
